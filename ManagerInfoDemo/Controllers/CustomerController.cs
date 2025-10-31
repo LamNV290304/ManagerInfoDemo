@@ -3,31 +3,36 @@ using ManagerInfoDemo.Filter;
 using ManagerInfoDemo.Models;
 using ManagerInfoDemo.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace ManagerInfoDemo.Controllers
 {
     [SessionAuthorize]
     public class CustomerController : Controller
     {
-        private readonly ICustomerService _customerService;
+        private const int DefaultPageSize = 10;
 
-        public CustomerController(ICustomerService customerService)
+        private readonly ICustomerService _customerService;
+        private readonly IEmailService _emailService;
+
+        public CustomerController(ICustomerService customerService, IEmailService emailService)
         {
             _customerService = customerService;
+            _emailService = emailService;
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            var customers = _customerService.GetAll();
+            var customers = _customerService.GetPaged(pageSize: DefaultPageSize);
             return View(customers);
         }
 
         [HttpGet]
-        public IActionResult List(string? keyword, bool? isVerify)
+        public IActionResult List(string? keyword, bool? isVerify, int page = 1)
         {
-            var customers = _customerService.GetAll(keyword, isVerify);
-            return PartialView("_CustomerTableRows", customers);
+            var customers = _customerService.GetPaged(keyword, isVerify, page, DefaultPageSize);
+            return PartialView("_CustomerTable", customers);
         }
 
         [HttpGet]
@@ -49,7 +54,7 @@ namespace ManagerInfoDemo.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Upsert(Customer customer)
+        public async Task<IActionResult> Upsert(Customer customer)
         {
             if (string.IsNullOrWhiteSpace(customer.FullName))
             {
@@ -63,9 +68,21 @@ namespace ManagerInfoDemo.Controllers
 
             if (customer.Id == 0)
             {
-                customer.CreatedAt = DateTime.Now;
                 customer.CreatedBy = HttpContext.Session.GetInt32("UserId");
-                _customerService.Create(customer);
+                _customerService.Create(customer, out var verificationToken);
+                if (!string.IsNullOrWhiteSpace(customer.Email) && !string.IsNullOrEmpty(verificationToken))
+                {
+                    var verifyLink = Url.Action(
+                        "Verify",
+                        "CustomerVerification",
+                        new { email = customer.Email, token = verificationToken },
+                        Request.Scheme);
+
+                    if (!string.IsNullOrWhiteSpace(verifyLink))
+                    {
+                        await _emailService.SendCustomerVerificationEmailAsync(customer.Email!, verifyLink);
+                    }
+                }
             }
             else
             {

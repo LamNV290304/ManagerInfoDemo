@@ -1,0 +1,97 @@
+@model ManagerInfoDemo.ViewModels.CustomerListResult
+
+@{
+    var totalItems = Model.TotalItems;
+    var pageNumber = Model.PageNumber;
+    var pageSize = Model.PageSize;
+    var totalPages = Model.TotalPages;
+    var startItem = totalItems == 0 ? 0 : (pageNumber - 1) * pageSize + 1;
+    var endItem = Math.Min(pageNumber * pageSize, totalItems);
+
+    const int maxPagesToShow = 7;
+    var startPage = Math.Max(1, pageNumber - maxPagesToShow / 2);
+    var endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+    startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+}
+
+<div class="table-responsive text-nowrap">
+    <input type="hidden" id="customerCurrentPage" value="@pageNumber" />
+    <table class="table" id="customersTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+                <th>Địa chỉ</th>
+                <th>Ngày tạo</th>
+                <th>Trạng thái</th>
+                <th class="text-end">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @await Html.PartialAsync("_CustomerTableRows", Model.Items)
+        </tbody>
+    </table>
+</div>
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-3 gap-2" id="customerPaginationWrapper">
+    <div class="text-muted small">
+        @if (totalItems == 0)
+        {
+            <span>Không có bản ghi.</span>
+        }
+        else
+        {
+            <span>Hiển thị @startItem - @endItem trên tổng số @totalItems khách hàng.</span>
+        }
+    </div>
+
+    @if (totalPages > 1)
+    {
+        <nav aria-label="Customer pagination">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item @(pageNumber == 1 ? "disabled" : string.Empty)">
+                    <a class="page-link" href="#" data-page="@(pageNumber - 1)" aria-label="Trang trước">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                @if (startPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="#" data-page="1">1</a>
+                    </li>
+                    if (startPage > 2)
+                    {
+                        <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                    }
+                }
+
+                @for (var pageIndex = startPage; pageIndex <= endPage; pageIndex++)
+                {
+                    <li class="page-item @(pageIndex == pageNumber ? "active" : string.Empty)">
+                        <a class="page-link" href="#" data-page="@pageIndex">@pageIndex</a>
+                    </li>
+                }
+
+                @if (endPage < totalPages)
+                {
+                    if (endPage < totalPages - 1)
+                    {
+                        <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                    }
+                    <li class="page-item">
+                        <a class="page-link" href="#" data-page="@totalPages">@totalPages</a>
+                    </li>
+                }
+
+                <li class="page-item @(pageNumber == totalPages ? "disabled" : string.Empty)">
+                    <a class="page-link" href="#" data-page="@(pageNumber + 1)" aria-label="Trang sau">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>

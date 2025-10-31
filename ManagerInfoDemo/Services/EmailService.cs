@@ -25,29 +25,22 @@ namespace ManagerInfoDemo.Services
 
         public async Task SendEmailAsync(string toEmail, string resetLink)
         {
-            var msg = new MimeMessage();
-            msg.From.Add(new MailboxAddress(_smtp.SenderName, _smtp.SenderEmail));
-            msg.To.Add(MailboxAddress.Parse(toEmail));
-            msg.Subject = "Đặt lại mật khẩu";
-
-
-            msg.Body = new BodyBuilder
-            {
-                HtmlBody = $@"
+            var subject = "Đặt lại mật khẩu";
+            var htmlBody = $"""
         <p>Xin chào,</p>
 
         <p>Bạn vừa yêu cầu đặt lại mật khẩu. Nhấn vào nút bên dưới 
            (hiệu lực 30 phút):</p>
 
-        <p style=""text-align:center;"">
-            <a href=""{resetLink}""
-               style=""display:inline-block;
+        <p style="text-align:center;">
+            <a href="{resetLink}"
+               style="display:inline-block;
                       padding:12px 24px;
                       background-color:#0d6efd;
                       color:#ffffff;
                       text-decoration:none;
                       font-weight:bold;
-                      border-radius:6px;"">
+                      border-radius:6px;">
                 Đặt lại mật khẩu
             </a>
         </p>
@@ -55,7 +48,51 @@ namespace ManagerInfoDemo.Services
         <p>Nếu không phải bạn, vui lòng bỏ qua e‑mail này.</p>
 
         <hr/>
-        <small>© 2025 CozyShop</small>"
+    <small>© 2025 CozyShop</small>
+    """;
+
+            await SendAsync(toEmail, subject, htmlBody);
+        }
+
+        public async Task SendCustomerVerificationEmailAsync(string toEmail, string verificationLink)
+        {
+            var subject = "Xác nhận tài khoản khách hàng";
+            var htmlBody = $"""
+        <p>Xin chào,</p>
+
+        <p>Cảm ơn bạn đã đăng ký. Vui lòng xác nhận e‑mail bằng cách nhấn nút dưới đây:</p>
+
+        <p style="text-align:center;">
+            <a href="{verificationLink}"
+               style="display:inline-block;
+                      padding:12px 24px;
+                      background-color:#16a34a;
+                      color:#ffffff;
+                      text-decoration:none;
+                      font-weight:bold;
+                      border-radius:6px;">
+                Xác nhận tài khoản
+            </a>
+        </p>
+
+        <p>Nếu bạn không yêu cầu tạo tài khoản, hãy bỏ qua e‑mail này.</p>
+
+        <hr/>
+    <small>© 2025 CozyShop</small>
+    """;
+
+            await SendAsync(toEmail, subject, htmlBody);
+        }
+
+        private async Task SendAsync(string toEmail, string subject, string htmlBody)
+        {
+            var msg = new MimeMessage();
+            msg.From.Add(new MailboxAddress(_smtp.SenderName, _smtp.SenderEmail));
+            msg.To.Add(MailboxAddress.Parse(toEmail));
+            msg.Subject = subject;
+            msg.Body = new BodyBuilder
+            {
+                HtmlBody = htmlBody
             }.ToMessageBody();
 
 

@@ -1,14 +1,15 @@
-using System.Collections.Generic;
 using ManagerInfoDemo.Models;
+using ManagerInfoDemo.ViewModels;
 
 namespace ManagerInfoDemo.Services.Interfaces
 {
     public interface ICustomerService
     {
-        IEnumerable<Customer> GetAll(string? keyword = null, bool? isVerify = null);
+        CustomerListResult GetPaged(string? keyword = null, bool? isVerify = null, int page = 1, int pageSize = 10);
         Customer? GetById(int id);
-        bool Create(Customer customer);
+        bool Create(Customer customer, out string? verificationToken);
         bool Update(Customer customer);
         bool Delete(int id);
+        bool VerifyCustomer(string email, string token);
     }
 }

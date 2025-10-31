@@ -24,6 +24,11 @@ namespace ManagerInfoDemo.Repositories
             return _context.Customers.FirstOrDefault(c => c.Id == id);
         }
 
+        public Customer? GetByEmail(string email)
+        {
+            return _context.Customers.FirstOrDefault(c => c.Email == email);
+        }
+
         public void Add(Customer customer)
         {
             _context.Customers.Add(customer);

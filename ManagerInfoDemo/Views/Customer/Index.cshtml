@@ -1,4 +1,4 @@
-@model IEnumerable<ManagerInfoDemo.Models.Customer>
+@model ManagerInfoDemo.ViewModels.CustomerListResult
 
 @{
     ViewData["Title"] = "Quản lý khách hàng";
@@ -28,24 +28,8 @@
             Thêm khách hàng
         </button>
     </div>
-    <div class="table-responsive text-nowrap">
-        <table class="table" id="customersTable">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Họ tên</th>
-                    <th>Email</th>
-                    <th>Số điện thoại</th>
-                    <th>Địa chỉ</th>
-                    <th>Ngày tạo</th>
-                    <th>Trạng thái</th>
-                    <th class="text-end">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                @await Html.PartialAsync("_CustomerTableRows", Model)
-            </tbody>
-        </table>
+    <div id="customerTableWrapper">
+        @await Html.PartialAsync("_CustomerTable", Model)
     </div>
 </div>
 
@@ -68,20 +52,27 @@
             var modalElement = document.getElementById('customerModal');
             var modal = new bootstrap.Modal(modalElement);
             var $modalBody = $('#customerModalBody');
-            var $tableBody = $('#customersTable tbody');
+            var $tableWrapper = $('#customerTableWrapper');
             var searchTimer;
+            var currentPage = Number($('#customerCurrentPage').val()) || 1;
 
-            function currentFilters() {
+            function currentFilters(page) {
                 return {
                     keyword: $('#keywordInput').val(),
-                    isVerify: $('#verifyFilter').val()
+                    isVerify: $('#verifyFilter').val(),
+                    page: page || currentPage
                 };
             }
 
-            function refreshTable() {
-                $.get('@Url.Action("List", "Customer")', currentFilters())
+            function refreshTable(page) {
+                if (page) {
+                    currentPage = page;
+                }
+
+                $.get('@Url.Action("List", "Customer")', currentFilters(currentPage))
                     .done(function (html) {
-                        $tableBody.html(html);
+                        $tableWrapper.html(html);
+                        currentPage = Number($('#customerCurrentPage').val()) || currentPage;
                     });
             }
 
@@ -100,7 +91,7 @@
                 loadForm('@Url.Action("Upsert", "Customer")');
             });
 
-            $tableBody.on('click', '.btn-edit', function () {
+            $tableWrapper.on('click', '.btn-edit', function () {
                 var id = $(this).closest('tr').data('id');
                 loadForm('@Url.Action("Upsert", "Customer")', { id: id });
             });
@@ -131,7 +122,7 @@
                 });
             });
 
-            $tableBody.on('click', '.btn-delete', function () {
+            $tableWrapper.on('click', '.btn-delete', function () {
                 if (!confirm('Bạn có chắc muốn xoá khách hàng này?')) {
                     return;
                 }
@@ -151,14 +142,24 @@
                 });
             });
 
+            $tableWrapper.on('click', '.pagination a[data-page]', function (evt) {
+                evt.preventDefault();
+                var requestedPage = Number($(this).data('page'));
+                if (!requestedPage || requestedPage === currentPage || $(this).closest('.page-item').hasClass('disabled')) {
+                    return;
+                }
+
+                refreshTable(requestedPage);
+            });
+
             $('#verifyFilter').on('change', function () {
-                refreshTable();
+                refreshTable(1);
             });
 
             $('#keywordInput').on('input', function () {
                 clearTimeout(searchTimer);
                 searchTimer = setTimeout(function () {
-                    refreshTable();
+                    refreshTable(1);
                 }, 400);
             });
         });

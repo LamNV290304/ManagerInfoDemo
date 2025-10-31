@@ -1,0 +1,107 @@
+@model bool
+@{
+    Layout = null;
+    var title = Model ? "Xác nhận thành công" : "Xác nhận không thành công";
+    var description = Model
+        ? "Tài khoản khách hàng đã được xác nhận. Bạn có thể đóng cửa sổ này."
+        : "Liên kết xác nhận không hợp lệ hoặc đã hết hạn.";
+    var accent = Model ? "#16a34a" : "#dc2626";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@title</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #1f2937;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+            padding: 48px 40px;
+            max-width: 520px;
+            text-align: center;
+        }
+        .status-icon {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(22, 163, 74, 0.12);
+            margin-bottom: 24px;
+            color: #16a34a;
+        }
+        .status-icon svg {
+            width: 44px;
+            height: 44px;
+        }
+        .status-icon.error {
+            background-color: rgba(220, 38, 38, 0.12);
+            color: #dc2626;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+        p {
+            font-size: 16px;
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            border-radius: 999px;
+            background-color: @accent;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(31, 41, 55, 0.18);
+        }
+        .muted {
+            font-size: 14px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="status-icon @(Model ? string.Empty : "error")">
+            @if (Model)
+            {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            }
+            else
+            {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <line x1="9" y1="9" x2="15" y2="15" stroke-linecap="round"></line>
+                    <line x1="15" y1="9" x2="9" y2="15" stroke-linecap="round"></line>
+                </svg>
+            }
+        </div>
+        <h1>@title</h1>
+        <p>@description</p>
+        <a class="btn" href="/">Về trang chủ</a>
+        <p class="muted">Nếu cần hỗ trợ thêm, vui lòng liên hệ quản trị viên.</p>
+    </div>
+</body>
+</html>
