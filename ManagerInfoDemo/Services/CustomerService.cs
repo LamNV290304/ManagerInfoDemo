@@ -69,9 +69,28 @@ namespace ManagerInfoDemo.Services
             return _repository.GetById(id);
         }
 
-        public bool Create(Customer customer, out string? verificationToken)
+        public bool Create(Customer customer, out string? verificationToken, out string? errorMessage)
         {
             verificationToken = null;
+            errorMessage = null;
+
+            var normalizedEmail = customer.Email?.Trim();
+            if (!string.IsNullOrWhiteSpace(normalizedEmail))
+            {
+                var existingByEmail = _repository.GetByEmail(normalizedEmail);
+                if (existingByEmail != null)
+                {
+                    errorMessage = "Email đã tồn tại.";
+                    return false;
+                }
+
+                customer.Email = normalizedEmail;
+            }
+            else
+            {
+                customer.Email = null;
+            }
+
             customer.CreatedAt ??= DateTime.Now;
             customer.IsVerify = false;
             _repository.Add(customer);
@@ -86,16 +105,29 @@ namespace ManagerInfoDemo.Services
             return true;
         }
 
-        public bool Update(Customer customer)
+        public bool Update(Customer customer, out string? errorMessage)
         {
+            errorMessage = null;
             var existing = _repository.GetById(customer.Id);
             if (existing == null)
             {
+                errorMessage = "Khách hàng không tồn tại.";
                 return false;
             }
 
+            var normalizedEmail = customer.Email?.Trim();
+            if (!string.IsNullOrWhiteSpace(normalizedEmail))
+            {
+                var duplicate = _repository.GetByEmail(normalizedEmail);
+                if (duplicate != null && duplicate.Id != customer.Id)
+                {
+                    errorMessage = "Email đã tồn tại.";
+                    return false;
+                }
+            }
+
             existing.FullName = customer.FullName;
-            existing.Email = customer.Email;
+            existing.Email = string.IsNullOrWhiteSpace(normalizedEmail) ? null : normalizedEmail;
             existing.Phone = customer.Phone;
             existing.Address = customer.Address;
             existing.DateOfBirth = customer.DateOfBirth;

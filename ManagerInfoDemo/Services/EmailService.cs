@@ -25,6 +25,11 @@ namespace ManagerInfoDemo.Services
 
         public async Task SendEmailAsync(string toEmail, string resetLink)
         {
+            if (!IsConfigured() || string.IsNullOrWhiteSpace(toEmail))
+            {
+                return;
+            }
+
             var subject = "Đặt lại mật khẩu";
             var htmlBody = $"""
         <p>Xin chào,</p>
@@ -56,6 +61,11 @@ namespace ManagerInfoDemo.Services
 
         public async Task SendCustomerVerificationEmailAsync(string toEmail, string verificationLink)
         {
+            if (!IsConfigured() || string.IsNullOrWhiteSpace(toEmail))
+            {
+                return;
+            }
+
             var subject = "Xác nhận tài khoản khách hàng";
             var htmlBody = $"""
         <p>Xin chào,</p>
@@ -84,8 +94,22 @@ namespace ManagerInfoDemo.Services
             await SendAsync(toEmail, subject, htmlBody);
         }
 
+        private bool IsConfigured()
+        {
+            return !string.IsNullOrWhiteSpace(_smtp.Host)
+                   && _smtp.Port > 0
+                   && !string.IsNullOrWhiteSpace(_smtp.SenderEmail)
+                   && !string.IsNullOrWhiteSpace(_smtp.User)
+                   && !string.IsNullOrWhiteSpace(_smtp.Pass);
+        }
+
         private async Task SendAsync(string toEmail, string subject, string htmlBody)
         {
+            if (!IsConfigured())
+            {
+                return;
+            }
+
             var msg = new MimeMessage();
             msg.From.Add(new MailboxAddress(_smtp.SenderName, _smtp.SenderEmail));
             msg.To.Add(MailboxAddress.Parse(toEmail));

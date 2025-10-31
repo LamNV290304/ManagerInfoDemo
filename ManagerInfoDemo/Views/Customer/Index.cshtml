@@ -8,6 +8,8 @@
     @Html.AntiForgeryToken()
 </form>
 
+<div id="customerAlert" class="alert alert-success d-none" role="alert"></div>
+
 <div class="card">
     <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
         <div class="d-flex flex-column flex-md-row align-items-md-center gap-3 w-100">
@@ -53,8 +55,10 @@
             var modal = new bootstrap.Modal(modalElement);
             var $modalBody = $('#customerModalBody');
             var $tableWrapper = $('#customerTableWrapper');
+            var $alert = $('#customerAlert');
             var searchTimer;
             var currentPage = Number($('#customerCurrentPage').val()) || 1;
+            var alertTimer;
 
             function currentFilters(page) {
                 return {
@@ -69,11 +73,26 @@
                     currentPage = page;
                 }
 
-                $.get('@Url.Action("List", "Customer")', currentFilters(currentPage))
+                return $.get('@Url.Action("List", "Customer")', currentFilters(currentPage))
                     .done(function (html) {
                         $tableWrapper.html(html);
                         currentPage = Number($('#customerCurrentPage').val()) || currentPage;
                     });
+            }
+
+            function showSuccess(message) {
+                if (!message) {
+                    return;
+                }
+
+                if (alertTimer) {
+                    clearTimeout(alertTimer);
+                }
+
+                $alert.text(message).removeClass('d-none');
+                alertTimer = setTimeout(function () {
+                    $alert.addClass('d-none');
+                }, 3000);
             }
 
             function loadForm(url, params) {
@@ -107,7 +126,9 @@
                 }).done(function (response) {
                     if (response && response.success) {
                         modal.hide();
-                        refreshTable();
+                        refreshTable().done(function () {
+                            showSuccess(response.message);
+                        });
                     } else {
                         $modalBody.html(response);
                         if ($.validator && $.validator.unobtrusive) {

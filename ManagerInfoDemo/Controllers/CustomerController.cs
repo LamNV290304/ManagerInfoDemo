@@ -66,10 +66,23 @@ namespace ManagerInfoDemo.Controllers
                 return PartialView("_CustomerForm", customer);
             }
 
+            string successMessage;
+
             if (customer.Id == 0)
             {
                 customer.CreatedBy = HttpContext.Session.GetInt32("UserId");
-                _customerService.Create(customer, out var verificationToken);
+                var created = _customerService.Create(customer, out var verificationToken, out var errorMessage);
+                if (!created)
+                {
+                    if (!string.IsNullOrWhiteSpace(errorMessage))
+                    {
+                        ModelState.AddModelError(nameof(Customer.Email), errorMessage);
+                    }
+
+                    return PartialView("_CustomerForm", customer);
+                }
+
+                successMessage = "Thêm khách hàng thành công.";
                 if (!string.IsNullOrWhiteSpace(customer.Email) && !string.IsNullOrEmpty(verificationToken))
                 {
                     var verifyLink = Url.Action(
@@ -86,14 +99,26 @@ namespace ManagerInfoDemo.Controllers
             }
             else
             {
-                var updated = _customerService.Update(customer);
+                var updated = _customerService.Update(customer, out var errorMessage);
                 if (!updated)
                 {
-                    return NotFound();
+                    if (string.Equals(errorMessage, "Khách hàng không tồn tại.", StringComparison.Ordinal))
+                    {
+                        return NotFound();
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(errorMessage))
+                    {
+                        ModelState.AddModelError(nameof(Customer.Email), errorMessage);
+                    }
+
+                    return PartialView("_CustomerForm", customer);
                 }
+
+                successMessage = "Cập nhật khách hàng thành công.";
             }
 
-            return Json(new { success = true });
+            return Json(new { success = true, message = successMessage });
         }
 
         [HttpPost]
