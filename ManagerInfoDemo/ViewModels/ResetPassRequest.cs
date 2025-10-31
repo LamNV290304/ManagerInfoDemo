@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ManagerInfoDemo.Requests
+namespace ManagerInfoDemo.ViewModels
 {
     public class ResetPassRequest
     {

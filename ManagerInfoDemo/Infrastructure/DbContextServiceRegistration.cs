@@ -7,8 +7,8 @@ namespace ManagerInfoDemo.Infrastructure
     {
         public static IServiceCollection AddDbContextLayer(this IServiceCollection services, IConfiguration configuration)
         {
-            //services.AddDbContext<>(options =>
-            //    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<ManagerInfoContext>(options =>
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             return services;
         }

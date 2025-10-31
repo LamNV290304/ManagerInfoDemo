@@ -38,13 +38,9 @@
 <body>
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
-            <!-- Sidebar -->
-            @await Html.PartialAsync("_Sidebar")
 
             <!-- Main Page -->
             <div class="layout-page">
-                <!-- Navbar -->
-                @await Html.PartialAsync("_Navbar")
 
                 <!-- Content -->
                 <div class="content-wrapper">
@@ -52,8 +48,6 @@
                         @RenderBody()
                     </div>
 
-                    <!-- Footer -->
-                    @await Html.PartialAsync("_Footer")
                 </div>
             </div>
         </div>

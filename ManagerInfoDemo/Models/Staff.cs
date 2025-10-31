@@ -13,7 +13,7 @@ public partial class Staff
 
     public DateTime? CreatedAt { get; set; }
 
-    public string Email { get; set; } = null!;
+    public string? Email { get; set; }
 
     public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
 }

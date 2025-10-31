@@ -1,0 +1,166 @@
+@model IEnumerable<ManagerInfoDemo.Models.Customer>
+
+@{
+    ViewData["Title"] = "Quản lý khách hàng";
+}
+
+<form id="antiForgeryForm" asp-controller="Customer" asp-action="Delete" method="post" class="d-none">
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="card">
+    <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div class="d-flex flex-column flex-md-row align-items-md-center gap-3 w-100">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bx bx-search"></i></span>
+                <input type="text" id="keywordInput" class="form-control" placeholder="Tìm kiếm tên, email, số điện thoại..." />
+            </div>
+            <div class="w-md-25">
+                <select id="verifyFilter" class="form-select">
+                    <option value="">Tất cả</option>
+                    <option value="true">Đã xác thực</option>
+                    <option value="false">Chưa xác thực</option>
+                </select>
+            </div>
+        </div>
+        <button id="btnCreate" type="button" class="btn btn-primary">
+            <i class="bx bx-plus"></i>
+            Thêm khách hàng
+        </button>
+    </div>
+    <div class="table-responsive text-nowrap">
+        <table class="table" id="customersTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Số điện thoại</th>
+                    <th>Địa chỉ</th>
+                    <th>Ngày tạo</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @await Html.PartialAsync("_CustomerTableRows", Model)
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="customerModalLabel">Khách hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="customerModalBody"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(function () {
+            var modalElement = document.getElementById('customerModal');
+            var modal = new bootstrap.Modal(modalElement);
+            var $modalBody = $('#customerModalBody');
+            var $tableBody = $('#customersTable tbody');
+            var searchTimer;
+
+            function currentFilters() {
+                return {
+                    keyword: $('#keywordInput').val(),
+                    isVerify: $('#verifyFilter').val()
+                };
+            }
+
+            function refreshTable() {
+                $.get('@Url.Action("List", "Customer")', currentFilters())
+                    .done(function (html) {
+                        $tableBody.html(html);
+                    });
+            }
+
+            function loadForm(url, params) {
+                $.get(url, params)
+                    .done(function (html) {
+                        $modalBody.html(html);
+                        if ($.validator && $.validator.unobtrusive) {
+                            $.validator.unobtrusive.parse('#customerForm');
+                        }
+                        modal.show();
+                    });
+            }
+
+            $('#btnCreate').on('click', function () {
+                loadForm('@Url.Action("Upsert", "Customer")');
+            });
+
+            $tableBody.on('click', '.btn-edit', function () {
+                var id = $(this).closest('tr').data('id');
+                loadForm('@Url.Action("Upsert", "Customer")', { id: id });
+            });
+
+            $('#customerModal').on('submit', '#customerForm', function (evt) {
+                evt.preventDefault();
+
+                var $form = $(this);
+                $.ajax({
+                    url: $form.attr('action'),
+                    method: $form.attr('method') || 'post',
+                    data: $form.serialize()
+                }).done(function (response) {
+                    if (response && response.success) {
+                        modal.hide();
+                        refreshTable();
+                    } else {
+                        $modalBody.html(response);
+                        if ($.validator && $.validator.unobtrusive) {
+                            $.validator.unobtrusive.parse('#customerForm');
+                        }
+                    }
+                }).fail(function (xhr) {
+                    $modalBody.html(xhr.responseText);
+                    if ($.validator && $.validator.unobtrusive) {
+                        $.validator.unobtrusive.parse('#customerForm');
+                    }
+                });
+            });
+
+            $tableBody.on('click', '.btn-delete', function () {
+                if (!confirm('Bạn có chắc muốn xoá khách hàng này?')) {
+                    return;
+                }
+
+                var id = $(this).closest('tr').data('id');
+                var token = $('#antiForgeryForm input[name="__RequestVerificationToken"]').val();
+
+                $.post('@Url.Action("Delete", "Customer")', {
+                    id: id,
+                    __RequestVerificationToken: token
+                }).done(function (response) {
+                    if (response && response.success) {
+                        refreshTable();
+                    } else {
+                        alert(response.message || 'Có lỗi xảy ra.');
+                    }
+                });
+            });
+
+            $('#verifyFilter').on('change', function () {
+                refreshTable();
+            });
+
+            $('#keywordInput').on('input', function () {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(function () {
+                    refreshTable();
+                }, 400);
+            });
+        });
+    </script>
+}

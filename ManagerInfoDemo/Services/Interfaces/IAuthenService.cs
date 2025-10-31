@@ -1,7 +1,7 @@
 ﻿using ManagerInfoDemo.Models;
-using ManagerInfoDemo.Requests;
+using ManagerInfoDemo.ViewModels;
 
-namespace ManagerInfoDemo.Services.Interface
+namespace ManagerInfoDemo.Services.Interfaces
 {
     public interface IAuthenService
     {

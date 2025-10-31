@@ -1,4 +1,4 @@
-﻿namespace ManagerInfoDemo.Services.Interface
+﻿namespace ManagerInfoDemo.Services.Interfaces
 {
     public interface IEmailService
     {

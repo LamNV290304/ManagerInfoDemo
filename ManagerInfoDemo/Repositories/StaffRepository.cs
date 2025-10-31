@@ -19,9 +19,10 @@ namespace ManagerInfoDemo.Repositories
             return _context.Staffs.FirstOrDefault(s => s.Id == id);
         }
 
-        public Staff? GetUserByUsername(string username)
+        public Staff? GetUserByUsernameOrEmail(string usernameOrEmail)
         {
-            return _context.Staffs.FirstOrDefault(s => s.Username == username);
+            return _context.Staffs
+                .FirstOrDefault(s => s.Username == usernameOrEmail || s.Email == usernameOrEmail);
         }
 
         public Staff? GetUserByEmail(string email)

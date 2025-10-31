@@ -56,13 +56,16 @@ public partial class ManagerInfoContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Email)
+                .HasMaxLength(255)
+                .IsUnicode(false);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.Username).HasMaxLength(100);
         });
 
         modelBuilder.Entity<Token>(entity =>
         {
-            entity.HasNoKey();
+            entity.HasKey(e => e.Email).HasName("PK__Tokens__A9D105355439D309");
 
             entity.Property(e => e.Email)
                 .HasMaxLength(255)

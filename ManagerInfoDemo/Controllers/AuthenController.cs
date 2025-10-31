@@ -1,7 +1,6 @@
 ﻿using ManagerInfoDemo.Filter;
 using ManagerInfoDemo.Models;
-using ManagerInfoDemo.Requests;
-using ManagerInfoDemo.Services.Interface;
+using ManagerInfoDemo.ViewModels;
 using ManagerInfoDemo.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -42,7 +41,7 @@ namespace ManagerInfoDemo.Controllers
             HttpContext.Session.SetString("Username", user.Username);
             HttpContext.Session.SetString("Email", user.Email);
 
-            return RedirectToAction("Home", "Home");
+            return RedirectToAction("Index", "Customer");
         }
 
         [HttpGet]
@@ -63,6 +62,11 @@ namespace ManagerInfoDemo.Controllers
 
             var token = _authenService.SaveToken(model.Email);
             var resetLink = Url.Action("ResetPassword", "Authen", new { email = model.Email, token }, Request.Scheme);
+            if (string.IsNullOrEmpty(resetLink))
+            {
+                TempData["Error"] = "Không thể tạo liên kết đặt lại mật khẩu.";
+                return View(model);
+            }
 
             await _emailService.SendEmailAsync(model.Email, resetLink);
 

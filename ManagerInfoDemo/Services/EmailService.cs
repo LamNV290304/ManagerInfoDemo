@@ -2,7 +2,7 @@
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using ManagerInfoDemo.Services.Interface;
+using ManagerInfoDemo.Services.Interfaces;
 
 namespace ManagerInfoDemo.Services
 {

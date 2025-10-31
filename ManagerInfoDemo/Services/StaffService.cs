@@ -28,9 +28,9 @@ namespace ManagerInfoDemo.Services
             return _staffRepository.GetUserById(id);
         }
 
-        public Staff? GetUserByUsername(string username)
+        public Staff? GetUserByUsernameOrEmail(string username)
         {
-            return _staffRepository.GetUserByUsername(username);
+            return _staffRepository.GetUserByUsernameOrEmail(username);
         }
 
         public bool ResetPassword(string email, string passwordHash)

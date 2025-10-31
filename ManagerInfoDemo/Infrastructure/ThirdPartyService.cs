@@ -1,4 +1,6 @@
 ﻿
+using ManagerInfoDemo.Services;
+
 namespace ManagerInfoDemo.Infrastructure
 {
     public static class ThirdPartyService
@@ -7,9 +9,7 @@ namespace ManagerInfoDemo.Infrastructure
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            //services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
-
-            //services.Configure<CloudinarySettings>(configuration.GetSection("Cloudinary"));
+            services.Configure<SmtpSettings>(configuration.GetSection("Smtp"));
 
             return services;
         }
